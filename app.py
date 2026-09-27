@@ -4,11 +4,11 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-# ==========================================
-# 1. CONFIGURAÇÃO E BANCO DE DADOS
-# ==========================================
-# Configura a página para ocupar a tela toda (bom para monitores de controle)
-st.set_page_config(page_title="Controle de Frota 🚚", layout="wide")
+
+# 1. CONF E BD
+
+
+st.set_page_config(page_title="Controle de Frota", layout="wide")
 
 @st.cache_resource
 def conectar_banco():
@@ -23,9 +23,8 @@ def conectar_banco():
 
 conn = conectar_banco()
 
-# ==========================================
 # 2. FUNÇÃO DA IA PREDITIVA
-# ==========================================
+
 def prever_proxima_troca(id_caminhao, id_peca):
     df = pd.read_sql_query("SELECT km_na_troca, vida_util_peca FROM historico_manutencao WHERE id_caminhao = ? AND id_peca = ? ORDER BY km_na_troca ASC", conn, params=(id_caminhao, id_peca))
     if len(df) < 3:
@@ -43,11 +42,11 @@ def prever_proxima_troca(id_caminhao, id_peca):
     vida_util_prevista = modelo.predict(np.array([[km_atual]]))[0] 
     return round(km_atual + vida_util_prevista, 2)
 
-# ==========================================
-# 3. INTERFACE GRÁFICA (UI) NO STREAMLIT
-# ==========================================
 
-# Injeção de CSS para Imagem de Fundo e Tons de Azul
+# 3. INTERFACE GRÁFICA (UI Bem basicona) NO STREAMLIT
+
+
+# CSS (A imagem que usei da empresa onde trabalho, apenas para exemplo)
 st.markdown(
     """
     <style>
@@ -114,7 +113,7 @@ st.title("Painel Logístico: Frota e Almoxarifado")
 # Organiza o sistema em abas de navegação
 aba_estoque, aba_os, aba_ia = st.tabs(["Visão de Estoque", "Lançar Ordem de Serviço", "Análise Preditiva"])
 
-# --- ABA 1: ESTOQUE ---
+# ABA 1: ESTOQUE
 with aba_estoque:
     st.header("Gestão de Peças e Recebimento")
     col1, col2 = st.columns([1, 2])
@@ -141,7 +140,7 @@ with aba_estoque:
         for _, row in baixo_estoque.iterrows():
             st.warning(f"Ação de Suprimentos Recomendada: Solicitar compra de {row['Peça']} (Restam {row['Qtd']} no armazém).")
 
-# --- ABA 2: ORDEM DE SERVIÇO ---
+# ABA 2: ORDEM DE SERVIÇO
 with aba_os:
     st.header("Movimentação e Manutenção")
     df_caminhoes = pd.read_sql_query("SELECT * FROM caminhoes", conn)
@@ -182,7 +181,7 @@ with aba_os:
                 st.success("Estoque atualizado e histórico salvo com sucesso!")
                 st.rerun()
 
-# --- ABA 3: INTELIGÊNCIA ARTIFICIAL ---
+# ABA 3: INTELIGÊNCIA ARTIFICIAL
 with aba_ia:
     st.header("Agendamento Preditivo")
     if not df_caminhoes.empty and not df_pecas_disp.empty:
